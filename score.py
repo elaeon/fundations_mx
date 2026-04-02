@@ -1,85 +1,57 @@
-"""
-Score each occupation's AI exposure using an LLM via OpenRouter.
-
-Reads Markdown descriptions from pages/, sends each to an LLM with a scoring
-rubric, and collects structured scores. Results are cached incrementally to
-scores.json so the script can be resumed if interrupted.
-
-Usage:
-    uv run python score.py
-    uv run python score.py --model google/gemini-3-flash-preview
-    uv run python score.py --start 0 --end 10   # test on first 10
-"""
-
 import argparse
-import json
+from pathlib import Path
 import os
-import time
+import json
 import httpx
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
+
 
 DEFAULT_MODEL = "google/gemini-3-flash-preview"
 OUTPUT_FILE = "scores.json"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+
 SYSTEM_PROMPT = """\
-You are an expert analyst evaluating how exposed different occupations are to \
-AI. You will be given a detailed description of an occupation from the Bureau \
-of Labor Statistics.
+You are an expert analyst evaluating how fundations and trusts efficiency
+resources managment, also to inspect and decide if they are diverting money or doing
+activities like laundry money.
+You will be given a detailed description of an trust from the mexican IRS (SAT), so you have to
+manage some variables names and descriptions in Spanish.
 
-Rate the occupation's overall **AI Exposure** on a scale from 0 to 10.
+Rate the risk's overall **laundry money and efficiency management** on a scale from 0 to 1, where 0 is high risk
+and 1 is low risk / high efficiency.
 
-AI Exposure measures: how much will AI reshape this occupation? Consider both \
-direct effects (AI automating tasks currently done by humans) and indirect \
-effects (AI making each worker so productive that fewer are needed).
+Laundry Money measures: how are manage the resources? Consider efficiency \
+risk, coherence and anomalies like in the structured model Fundation Risk & Efficiency Score (FRES).
+You can also use Z-score if is possible.
 
-A key signal is whether the job's work product is fundamentally digital. If \
-the job can be done entirely from a home office on a computer — writing, \
-coding, analyzing, communicating — then AI exposure is inherently high (7+), \
-because AI capabilities in digital domains are advancing rapidly. Even if \
-today's AI can't handle every aspect of such a job, the trajectory is steep \
-and the ceiling is very high. Conversely, jobs requiring physical presence, \
-manual skill, or real-time human interaction in the physical world have a \
-natural barrier to AI exposure.
+Keys signals are operative efficiency (E), financial risk (R), internal coherence (C) and anomaly risk (A)
+usually are weigthed FRES=0.3E+0.25R+0.25C+0.2A, but you are free to adjust or update this weights if 
+the data is viable. You also can build derivates variables like liquidity, leverage and weight of the assets.
+Also, check concisely the history of the board of directors (organo de gobierno).
 
 Use these anchors to calibrate your score:
 
-- **0–1: Minimal exposure.** The work is almost entirely physical, hands-on, \
-or requires real-time human presence in unpredictable environments. AI has \
-essentially no impact on daily work. \
-Examples: roofer, landscaper, commercial diver.
+- **0–0.29: Very Hight exposure.** The fundation or trust is in hight risk or low efficiency.
 
-- **2–3: Low exposure.** Mostly physical or interpersonal work. AI might help \
-with minor peripheral tasks (scheduling, paperwork) but doesn't touch the \
-core job. \
-Examples: electrician, plumber, firefighter, dental hygienist.
+- **0.3–0.49: Hight exposure.** They are weakness or inconsistencies that could lead to a mayor problem \
+and should be resolved.
 
-- **4–5: Moderate exposure.** A mix of physical/interpersonal work and \
-knowledge work. AI can meaningfully assist with the information-processing \
-parts but a substantial share of the job still requires human presence. \
-Examples: registered nurse, police officer, veterinarian.
+- **0.5–0.69: Moderate exposure.** They have room to improvement efficiency that should be fixed. The operation could have some
+data manipulation or the board members could be suppliers.
 
-- **6–7: High exposure.** Predominantly knowledge work with some need for \
-human judgment, relationships, or physical presence. AI tools are already \
-useful and workers using AI may be substantially more productive. \
-Examples: teacher, manager, accountant, journalist.
+- **0.7–8: Low exposure.** Low financial risk, expenses are well distributed and low sign of bad management.
 
-- **8–9: Very high exposure.** The job is almost entirely done on a computer. \
-All core tasks — writing, coding, analyzing, designing, communicating — are \
-in domains where AI is rapidly improving. The occupation faces major \
-restructuring. \
-Examples: software developer, graphic designer, translator, data analyst, \
-paralegal, copywriter.
+- **8–1: Very Low exposure.** Hight efficiency and the lowest risk of inconsistencies without anomalies or suspiciuos variables \
+or data manipulation.
 
-- **10: Maximum exposure.** Routine information processing, fully digital, \
-with no physical component. AI can already do most of it today. \
-Examples: data entry clerk, telemarketer.
 
 Respond with ONLY a JSON object in this exact format, no other text:
 {
-  "exposure": <0-10>,
+  "exposure": <0-1>,
   "rationale": "<2-3 sentences explaining the key factors>"
 }\
 """
@@ -118,25 +90,33 @@ def score_occupation(client, text, model):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--start", type=int, default=0)
-    parser.add_argument("--end", type=int, default=None)
+    parser.add_argument("--model", type=str, required=False, default=DEFAULT_MODEL)
+    parser.add_argument("--start", type=int, required=False, default=0)
+    parser.add_argument("--end", type=int, required=False, default=5)
     parser.add_argument("--delay", type=float, default=0.5)
     parser.add_argument("--force", action="store_true",
                         help="Re-score even if already cached")
+    parser.add_argument("--test", type=str, required=False, nargs='+', default=[])
+
     args = parser.parse_args()
-
-    with open("occupations.json") as f:
-        occupations = json.load(f)
-
-    subset = occupations[args.start:args.end]
+    with open("fundations.json") as f:
+        fundations = json.load(f)
+    
+    if args.test:
+        subset = []
+        for fund in fundations:
+            if fund["rfc"] in args.test:
+                subset.append(fund)
+    else:
+        subset = fundations[args.start:args.end]
 
     # Load existing scores
     scores = {}
     if os.path.exists(OUTPUT_FILE) and not args.force:
         with open(OUTPUT_FILE) as f:
             for entry in json.load(f):
-                scores[entry["slug"]] = entry
+                scores[entry["rfc"]] = entry
+    
 
     print(f"Scoring {len(subset)} occupations with {args.model}")
     print(f"Already cached: {len(scores)}")
@@ -144,33 +124,33 @@ def main():
     errors = []
     client = httpx.Client()
 
-    for i, occ in enumerate(subset):
-        slug = occ["slug"]
+    for i, fundation in enumerate(subset):
+        rfc = fundation["rfc"]
 
-        if slug in scores:
+        if rfc in scores:
             continue
 
-        md_path = f"pages/{slug}.md"
+        md_path = f"markdown/{rfc}.md"
         if not os.path.exists(md_path):
-            print(f"  [{i+1}] SKIP {slug} (no markdown)")
+            print(f"  [{i+1}] SKIP {rfc} (no markdown)")
             continue
 
         with open(md_path) as f:
             text = f.read()
 
-        print(f"  [{i+1}/{len(subset)}] {occ['title']}...", end=" ", flush=True)
+        print(f"  [{i+1}/{len(subset)}] {fundation['name']}...", end=" ", flush=True)
 
         try:
             result = score_occupation(client, text, args.model)
-            scores[slug] = {
-                "slug": slug,
-                "title": occ["title"],
+            scores[rfc] = {
+                "rfc": rfc,
+                "name": fundation["name"],
                 **result,
             }
             print(f"exposure={result['exposure']}")
         except Exception as e:
             print(f"ERROR: {e}")
-            errors.append(slug)
+            errors.append(rfc)
 
         # Save after each one (incremental checkpoint)
         with open(OUTPUT_FILE, "w") as f:
@@ -178,10 +158,10 @@ def main():
 
         if i < len(subset) - 1:
             time.sleep(args.delay)
-
+    
     client.close()
 
-    print(f"\nDone. Scored {len(scores)} occupations, {len(errors)} errors.")
+    print(f"\nDone. Scored {len(scores)} fundations, {len(errors)} errors.")
     if errors:
         print(f"Errors: {errors}")
 
