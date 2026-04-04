@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-DEFAULT_MODEL = "google/gemini-3-flash-preview"
+DEFAULT_MODEL = "qwen/qwen3.6-plus:free"
 OUTPUT_FILE = "scores.json"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -93,7 +93,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, required=False, default=DEFAULT_MODEL)
     parser.add_argument("--start", type=int, required=False, default=0)
-    parser.add_argument("--end", type=int, required=False, default=5)
+    parser.add_argument("--end", type=int, required=False, default=None)
     parser.add_argument("--delay", type=float, default=0.5)
     parser.add_argument("--force", action="store_true",
                         help="Re-score even if already cached")
