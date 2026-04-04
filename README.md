@@ -54,7 +54,7 @@ OPENROUTER_API_KEY=your_key_here
 ```bash
 
 # Generate CSV summary
-uv run python make_csv.py --year YYYY
+uv run python make_csv.py
 
 # Generate Markdown from Excel
 uv run python process.py

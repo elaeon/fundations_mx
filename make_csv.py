@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse
 
 
-def read_excel_and_save_csv(sheet_columns_dict, empty_cols, data_folder="data", output_folder="output"):
+def read_excel_and_save_csv(sheet_columns_dict, empty_cols, data_folder="data"):
     """
     Read specific sheets and columns from Excel files and save to CSV using Polars.
     
@@ -16,13 +16,10 @@ def read_excel_and_save_csv(sheet_columns_dict, empty_cols, data_folder="data", 
     data_folder : str, default="data"
         Path to folder containing Excel files
     
-    output_folder : str, default="output"
-        Path to folder where CSV files will be saved
-    
     Returns:
     --------
     None
-        Saves CSV files to the output folder
+        Saves CSV files
     
     Example:
     --------
@@ -32,10 +29,6 @@ def read_excel_and_save_csv(sheet_columns_dict, empty_cols, data_folder="data", 
     }
     read_excel_and_save_csv(sheet_config)
     """
-    
-    # Create output folder if it doesn't exist
-    output_path = Path(output_folder)
-    output_path.mkdir(exist_ok=True)
     
     # Get all Excel files from data folder
     data_path = Path(data_folder)
@@ -181,7 +174,7 @@ def main():
         empty_cols[key] = {col: [dtypes_values.get(col, 0.0)] for col in columns}
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--year", required=True, type=int)
+    parser.add_argument("--year", required=False, default=2024, type=int)
 
     args = parser.parse_args()
     if args.year:
