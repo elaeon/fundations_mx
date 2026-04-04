@@ -210,12 +210,22 @@ canvas#canvas {
 <div id="header">
   <div class="intro">
     <h1>Mexico Fundations & Trust Visualizer <a href="https://github.com/elaeon/fundations_mx">GitHub</a></h1>
-    <p>This is a research tool that visualizes <b><span id="statTotalFund">&mdash;</span></b> <b>fundations & trust</b> from the <a href="https://eu2-por-pro-don-net-cons.azurewebsites.net/Consulta/Acceso?ReturnUrl=%2FConsulta%2FTransparencia">SAT Donatarias</a>, covering <b><snap id="statTotalBenef">&mdash;</span></b> <b>beneficiaries</b> across the Mexican's states. Each rectangle's <b>area</b> is proportional to total beneficiaries. <b>Color</b> shows the exposure score. Click any tile to view its full data. This is not a report, a paper, or a serious economic publication &mdash; it is a development tool for exploring Fundations data visually.</p>
-    <p><b>LLM-powered coloring:</b> The <a href="https://github.com/elaeon/fundations_mx">source code</a> includes scrapers, parsers, and a pipeline for writing custom LLM prompts to score and color fundations by any criteria. You write a prompt, the LLM scores each occupation, and the treemap colors accordingly. You could write a different prompt for any question &mdash; and re-run the pipeline to get a different coloring.</p>
+    <p>This is a research tool that visualizes <b><span id="statTotalFund">&mdash;</span></b> <b>fundations & trust</b> 
+    from the <a href="https://eu2-por-pro-don-net-cons.azurewebsites.net/Consulta/Acceso?ReturnUrl=%2FConsulta%2FTransparencia">SAT Donatarias</a>, 
+    covering <b><snap id="statTotalBenef">&mdash;</span></b> <b>beneficiaries</b> across the Mexican's states. 
+    Each rectangle's <b>area</b> is proportional to total beneficiaries. <b>Color</b> shows the exposure score. 
+    Click any tile to view its full data. This is not a report, a paper, or a serious economic publication &mdash; 
+    it is a development tool for exploring Fundations data visually.
+    </p>
+    <p><b>LLM-powered coloring:</b> The <a href="https://github.com/elaeon/fundations_mx">source code</a> includes scrapers, 
+    parsers, and a pipeline for writing custom LLM prompts to score and color fundations by any criteria. 
+    You write a prompt, the LLM scores each Fundation or Trust, and the treemap colors accordingly. 
+    You could write a different prompt for any question &mdash; and re-run the pipeline to get a different coloring.
+    </p>
     <details>
       <summary>View the Digital AI Exposure scoring prompt (example)</summary>
       <div class="prompt-box">
-      You are an expert analyst evaluating how fundations and trusts efficiency manage
+You are an expert analyst evaluating how fundations and trusts efficiency manage
 their resources, also you have to inspect and decide if they are diverting money or doing
 activities in laundring money.
 You will be given a detailed description of an trust from the mexican IRS (SAT), so you have to
