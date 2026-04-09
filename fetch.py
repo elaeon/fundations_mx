@@ -159,6 +159,7 @@ def process_rfcs() -> None:
     for rfc in rfcs:
         print(f"Processing: {rfc}")
         result = run_playwright_command("snapshot")
+        time.sleep(.25)
         result_word_rfc = search_word_in_latest_file('textbox "RFC"')
         result_word_ef = search_word_in_latest_file('combobox "Ejercicio fiscal"')
         match_ref_rfc = extract_ref_pattern(result_word_rfc["line"])
@@ -172,7 +173,7 @@ def process_rfcs() -> None:
             result = run_playwright_command(cmd, opts)
             if "e48"in opts:
                 result = run_playwright_command("snapshot")
-                time.sleep(.5)
+                time.sleep(.25)
                 result_word = search_word_in_latest_file("No existen declaraciones de los filtros seleccionados")
                 if result_word["found"] is True:
                     print(f"{rfc}: No existen declaraciones de los filtros seleccionados")
@@ -182,24 +183,24 @@ def process_rfcs() -> None:
                     if match["found"] is True:
                         result = run_playwright_command("click", [match["matches"]["ref"]])
                         result = run_playwright_command("click", ["e47"])
-                        continue
-        
-        # Move the file to fundations directory
-        source_file = Path(".playwright-cli/InformeTransparencia.xlsx")
-        retry = 0
-        while retry < 2:
-            if source_file.exists():
-                destination_file = fundations_dir / f"{rfc}.xlsx"
-                try:
-                    shutil.move(str(source_file), str(destination_file))
-                    print(f"Saved: {destination_file}")
-                except Exception as e:
-                    print(f"Error moving file: {e}")
-                break
-            else:
-                time.sleep(.5)
-                retry += 1
-                print(f"Warning: Source file not found for {rfc}")
+                        break
+        else:
+            # Move the file to fundations directory
+            source_file = Path(".playwright-cli/InformeTransparencia.xlsx")
+            retry = 0
+            while retry < 3:
+                time.sleep(1)
+                if source_file.exists():
+                    destination_file = fundations_dir / f"{rfc}.xlsx"
+                    try:
+                        shutil.move(str(source_file), str(destination_file))
+                        print(f"Saved: {destination_file}")
+                    except Exception as e:
+                        print(f"Error moving file: {e}")
+                    break
+                else:
+                    retry += 1
+                    print(f"Warning: Source file not found for {rfc}")
 
 
 if __name__ == "__main__":
