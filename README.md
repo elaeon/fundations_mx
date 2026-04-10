@@ -41,7 +41,6 @@ The repo includes scrapers, parsers, and a pipeline for writing custom LLM promp
 
 ```
 uv sync
-uv run playwright install chromium
 ```
 
 Requires an OpenRouter API key in `.env`:
@@ -49,15 +48,22 @@ Requires an OpenRouter API key in `.env`:
 OPENROUTER_API_KEY=your_key_here
 ```
 
+Download the dataset into a folder named "data" in the same level as the folder "site"
+[dataset](https://zenodo.org/records/19498457)
+uncompress it and rename the folder to 2024
+
 ## Usage
 
 ```bash
 
-# Generate CSV summary (fundations.csv is already in the repo, so you can skip this step).
+# Generate CSV summary (fundations.csv) from files inside of data/2024
 uv run python make_csv.py
 
-# Generate Markdown from Excel
+# Generate Markdown from Excel (this will make a folder named markdown)
 uv run python process.py
+
+# Generate fundations.json file
+uv run python parse_fundations.py
 
 # Score AI exposure (uses OpenRouter API)
 uv run python score.py
@@ -67,4 +73,14 @@ uv run python build_site_data.py
 
 # Serve the site locally
 cd site && python -m http.server 8000
+
+# Test some fundations with a specific model
+uv run python score.py --test [RFC_1,...] --model [MODEL_NAME]
+
+# You can run a subset with:
+uv run python score.py --start [INDEX] --end [INDEX]
+or
+uv run python score.py --add [RFC_1,...]
+
 ```
+Inside fundations.json you can consult the RFC and fundations names.
