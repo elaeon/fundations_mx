@@ -48,8 +48,8 @@ Requires an OpenRouter API key in `.env`:
 OPENROUTER_API_KEY=your_key_here
 ```
 
-Download the dataset into a folder named "data" in the same level as the folder "site"
-[dataset](https://zenodo.org/records/19498457)
+Download the [dataset](https://zenodo.org/records/19498457) 
+into a folder named "data" in the same level as the folder "site"
 uncompress it and rename the folder to 2024
 
 ## Usage
