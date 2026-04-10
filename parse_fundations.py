@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import csv
 
-data_folder = f"data/fundations_2026.csv"
+data_folder = f"fundations.csv"
 data_path = Path(data_folder)
 
 fundations = {}
@@ -12,11 +12,10 @@ fundations = {}
 with data_path.open("r") as f:
     csv_reader = csv.DictReader(f)
     for row in csv_reader:
-        if row["RFC"] not in fundations:
-            fundations[row["RFC"]] = {
-                "rfc": row["RFC"],
-                "state": row["ENTIDAD FEDERATIVA*"],
-                "name": row["DENOMINACIÓN O RAZÓN SOCIAL*"]
+        if row["Rfc"] not in fundations:
+            fundations[row["Rfc"]] = {
+                "rfc": row["Rfc"],
+                "name": row["Razón social"]
             }
 
 fundations_list = list(fundations.values())

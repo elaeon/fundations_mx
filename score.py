@@ -98,6 +98,7 @@ def main():
     parser.add_argument("--force", action="store_true",
                         help="Re-score even if already cached")
     parser.add_argument("--test", type=str, required=False, nargs='+', default=[])
+    parser.add_argument("--year", required=False, default=2024, type=int)
 
     args = parser.parse_args()
     with open("fundations.json") as f:
@@ -131,7 +132,7 @@ def main():
         if rfc in scores:
             continue
 
-        md_path = f"markdown/{rfc}.md"
+        md_path = f"markdown/{args.year}/{rfc}.md"
         if not os.path.exists(md_path):
             print(f"  [{i+1}] SKIP {rfc} (no markdown)")
             continue
