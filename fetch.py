@@ -156,17 +156,20 @@ def process_rfcs() -> None:
         ]
         return commands_opt
     
-    for rfc in rfcs:
-        print(f"Processing: {rfc}")
-        result = run_playwright_command("snapshot")
+    def get_ref():
+        # Snapshot once to resolve stable form field refs (they don't change across iterations)
+        run_playwright_command("snapshot")
         time.sleep(.25)
         result_word_rfc = search_word_in_latest_file('textbox "RFC"')
         result_word_ef = search_word_in_latest_file('combobox "Ejercicio fiscal"')
-        match_ref_rfc = extract_ref_pattern(result_word_rfc["line"])
-        ref_rfc = match_ref_rfc["matches"]["ref"]
-        match_ref_ef = extract_ref_pattern(result_word_ef["line"])
-        ref_ef = match_ref_ef["matches"]["ref"]
-        print(ref_rfc, ref_ef)
+        ref_rfc = extract_ref_pattern(result_word_rfc["line"])["matches"]["ref"]
+        ref_ef = extract_ref_pattern(result_word_ef["line"])["matches"]["ref"]
+        return ref_rfc, ref_ef
+
+    ref_rfc, ref_ef = get_ref()
+    for rfc in rfcs:
+        print(f"Processing: {rfc}")
+        print(f"Form refs: rfc={ref_rfc}, ef={ref_ef}")
         commands_opt = cmd_build(rfc, ref_rfc, ref_ef)
         # Execute playwright commands in sequence
         for cmd, opts in commands_opt:
@@ -183,6 +186,7 @@ def process_rfcs() -> None:
                     if match["found"] is True:
                         result = run_playwright_command("click", [match["matches"]["ref"]])
                         result = run_playwright_command("click", ["e47"])
+                        ref_rfc, ref_ef = get_ref()
                         break
         else:
             # Move the file to foundations directory
